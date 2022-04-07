@@ -1,5 +1,5 @@
-use chrono::{DateTime, Utc, FixedOffset};
-use json::{JsonValue};
+use chrono::{DateTime, FixedOffset, Utc};
+use json::JsonValue;
 
 const MAX_ATTEMPTS: u32 = 3;
 
@@ -7,22 +7,21 @@ const MAX_ATTEMPTS: u32 = 3;
 pub enum TaskOperation {
     Run,
     Retry,
-    Fail
+    Fail,
 }
 
 #[derive(Clone)]
 struct Schedule {
-    interval: String
+    interval: String,
 }
 
 impl Schedule {
     fn parse(sched: &JsonValue) -> Schedule {
         Schedule {
-            interval: sched["interval"].to_string()
+            interval: sched["interval"].to_string(),
         }
     }
 }
-
 
 #[derive(Clone)]
 pub struct Task {
@@ -45,14 +44,13 @@ pub struct Task {
 impl Task {
     pub fn parse(hit: &JsonValue) -> Task {
         let id = &hit["_id"];
-        let source =  &hit["_source"]["task"];
+        let source = &hit["_source"]["task"];
 
-
-        fn json_to_datetime(source: &json::JsonValue, key: &str) -> Option<DateTime<FixedOffset>>  {
+        fn json_to_datetime(source: &json::JsonValue, key: &str) -> Option<DateTime<FixedOffset>> {
             let result = DateTime::parse_from_rfc3339(&source[key].to_string());
-            match result{
+            match result {
                 Ok(date) => Some(date),
-                Err(_) => None
+                Err(_) => None,
             }
         }
 
@@ -75,7 +73,7 @@ impl Task {
             traceparent: source["traceparent"].to_string(),
             state: source["state"].to_string(),
             attempts: source["attempts"].to_string().parse::<u32>().unwrap(),
-            status: source["status"].to_string()
+            status: source["status"].to_string(),
         }
     }
 
@@ -83,11 +81,11 @@ impl Task {
         fn stringify_datetime_option(opt: Option<DateTime<FixedOffset>>) -> String {
             match opt {
                 Some(date) => date.to_rfc3339(),
-                None => "null".to_string()
+                None => "null".to_string(),
             }
         }
 
-        json::stringify(json::object!{
+        json::stringify(json::object! {
             id: self.id.clone(),
             retryAt: stringify_datetime_option(self.retry_at),
             runAt: stringify_datetime_option(self.run_at),
@@ -119,10 +117,10 @@ impl Task {
     }
 
     pub fn ready_to(&self) -> Option<TaskOperation> {
-      if self.ready_to_run_now() {
-          return Some(TaskOperation::Run);
-      }
-      return self.ready_to_retry_or_fail();
+        if self.ready_to_run_now() {
+            return Some(TaskOperation::Run);
+        }
+        return self.ready_to_retry_or_fail();
     }
 
     fn is_unclaimed(&self) -> bool {
@@ -141,7 +139,7 @@ impl Task {
         let now = Utc::now();
         let run_at_ts = match self.run_at {
             Some(date) => date.timestamp(),
-            None => 0
+            None => 0,
         };
         self.is_unclaimed() && run_at_ts <= now.timestamp()
     }
@@ -153,7 +151,7 @@ impl Task {
         let now = Utc::now();
         let retry_at_ts = match self.retry_at {
             Some(date) => date.timestamp(),
-            None => 0
+            None => 0,
         };
         if retry_at_ts > now.timestamp() {
             return None;
