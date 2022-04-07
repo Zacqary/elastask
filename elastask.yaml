@@ -1,0 +1,16 @@
+# Use this config file to customize Elastask
+# Default values are included in the commented example
+
+### Currently only one Elasticsearch node is supported
+# elasticsearch.host: 'http://localhost:9200'
+# elasticsearch.username: 'elastic'
+# elasticsearch.password: 'changeme'
+# elasticsearch.indices_username: 'system_indices_superuser'
+
+### How often to poll for tasks, in MS
+# polling_interval: 3000
+### Task capacity of kibana nodes
+# kibana_capacity: 10
+
+### An array of Kibanas to balance tasks along
+# kibana.hosts: ['http://localhost:5601']
